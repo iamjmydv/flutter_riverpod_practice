@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final helloWorld = Provider<String>((ref) {
+final helloWorldProvider = Provider<String>((ref) {
   return 'Hello World!';
 });

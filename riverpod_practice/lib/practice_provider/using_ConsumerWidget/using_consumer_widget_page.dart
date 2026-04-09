@@ -16,13 +16,19 @@ class UsingConsumerWidgetPage extends ConsumerWidget {
   // 2. build method has an extra [WidgetRef] argument
   Widget build(BuildContext context, WidgetRef ref) {
     // 3. use ref.watch() to get the value of the provider
-    final text = ref.watch(helloWorld);
+    final text = ref.watch(helloWorldProvider);
 
     return Scaffold(
       body: Center(
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('-- ConsumerWidget --'),
+            Text(
+              text,
+              style: TextStyle(fontSize: 48),
+            ),
+          ],
         ),
       ),
     );
