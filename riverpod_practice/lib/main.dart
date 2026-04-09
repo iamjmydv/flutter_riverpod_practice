@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_practice/practice_provider/using_ConsumerWidget/page/using_consumer_widget_page.dart';
+import 'package:riverpod_practice/practice_provider/using_ConsumerWidget/using_consumer_widget_page.dart';
 
 void main() {
   runApp(ProviderScope(child: MyApp()));
