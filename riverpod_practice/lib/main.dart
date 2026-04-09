@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_practice/practice_provider/using_Consumer/using_consumer_page1.dart';
 import 'package:riverpod_practice/practice_provider/using_Consumer/using_consumer_page2.dart';
 
 void main() {
