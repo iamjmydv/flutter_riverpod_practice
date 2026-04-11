@@ -4,7 +4,7 @@ import 'package:riverpod_practice/practice_provider/provider/consumer_widget_pro
 
 /// By subclassing [ConsumerWidget] instead of [StatelessWidget],
 /// our widget's build method gets an extra ref object (of type [WidgetRef]) that we can use to watch our provider.
-///Using ConsumerWidget is the most common option and the one you should choose most of the time.
+/// Using ConsumerWidget is the most common option and the one you should choose most of the time.
 ///
 ///
 
