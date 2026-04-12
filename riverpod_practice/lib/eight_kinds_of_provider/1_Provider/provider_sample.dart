@@ -7,3 +7,9 @@ final providerSample1 = Provider<String>((ref) {
 final providerSample2 = Provider<String>(
   (ref) => 'This is \'Provider\' Sample 2',
 );
+
+final dateFormatterProvider = Provider<DateTime>(
+  (ref) {
+    return DateTime.now();
+  },
+);

@@ -7,8 +7,10 @@ class ProviderPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Providers acces via [ref object]
     final providerText1 = ref.watch(providerSample1);
     final providerText2 = ref.watch(providerSample2);
+    final dateTimeProvider = ref.watch(dateFormatterProvider);
     return Scaffold(
       body: Center(
         child: Column(
@@ -25,6 +27,10 @@ class ProviderPage extends ConsumerWidget {
             Text(
               providerText2,
               style: TextStyle(fontSize: 28),
+            ),
+            Text(
+              dateTimeProvider.toString(),
+              style: TextStyle(fontSize: 24),
             ),
           ],
         ),
