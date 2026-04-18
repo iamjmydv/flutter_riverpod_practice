@@ -1,8 +1,8 @@
 # Clean Architecture with FutureProvider + Use Case
 
-This folder is the same Clean Architecture setup as `CleanArchitecture/`, but with one extra layer inserted between the provider and the repository: the **Use Case**.
+A minimal clean-architecture demo: **one feature (get weather)** wired through every layer so the flow is easy to see.
 
-Same scenario (weather fetching). Same outcome. Same UI. The only difference is **where the business logic lives**.
+Inspired by the [MVVM/BLoC/Dio article](https://medium.com/@yamen.abd98/clean-architecture-in-flutter-mvvm-bloc-dio-79b1615530e1), adapted to Riverpod.
 
 ---
 
@@ -11,65 +11,92 @@ Same scenario (weather fetching). Same outcome. Same UI. The only difference is 
 ```
 CleanArchitectureWithUseCase/
 ├── domain/                                     (pure Dart, no dependencies)
-│   ├── weather_entity.dart                     — core business objects
-│   ├── forecast_entity.dart
-│   ├── favorite_city_entity.dart
-│   ├── weather_repository.dart                 — abstract interface
-│   └── usecases/                               — ONE action per file
-│       ├── get_weather_usecase.dart
-│       ├── get_forecast_usecase.dart
-│       ├── get_favorite_cities_usecase.dart
-│       ├── add_favorite_city_usecase.dart
-│       ├── update_favorite_city_usecase.dart
-│       └── remove_favorite_city_usecase.dart
+│   ├── entities/
+│   │   └── weather_entity.dart                 — core business object
+│   ├── repositories/
+│   │   └── weather_repository.dart             — abstract contract
+│   └── usecases/
+│       └── get_weather_usecase.dart            — one action, business rules
 │
 ├── data/                                       (implements domain contracts)
-│   ├── weather_model.dart                      — JSON serialization
-│   ├── forecast_model.dart
-│   ├── favorite_city_model.dart
-│   └── weather_repository_impl.dart            — concrete API implementation
+│   ├── data_sources/
+│   │   └── remote/
+│   │       ├── weather_api_service.dart        — abstract HTTP contract
+│   │       └── weather_api_service_mock.dart   — fake JSON for the demo
+│   ├── models/
+│   │   └── weather_model.dart                  — JSON ↔ entity mapping
+│   └── repositories/
+│       └── weather_repository_impl.dart        — wires service + model
 │
 ├── application/                                (providers, DI)
-│   ├── weather_repository_provider.dart        — DI for the repository
-│   ├── usecase_providers.dart                  — DI for every use case
-│   └── future_providers.dart                   — FutureProviders the UI watches
+│   └── providers/
+│       ├── weather_api_service_provider.dart   — DI: mock vs real HTTP
+│       ├── weather_repository_provider.dart    — DI: repository
+│       ├── usecase_providers.dart              — DI: use cases
+│       └── future_providers.dart               — what the UI watches
 │
 └── presentation/                               (UI only)
-    └── future_provider_page.dart               — page widget
+    └── pages/
+        └── future_provider_page.dart           — the screen
 ```
 
 ---
 
-## What changed vs. the plain `CleanArchitecture/` folder
-
-| File | Plain | With Use Case |
-|---|---|---|
-| `domain/weather_entity.dart` | ✅ same | ✅ same |
-| `domain/weather_repository.dart` | ✅ same | ✅ same |
-| `domain/usecases/*.dart` | ❌ | ✅ **NEW** |
-| `data/weather_model.dart` | ✅ same | ✅ same |
-| `data/weather_repository_impl.dart` | ✅ same | ✅ same |
-| `application/weather_repository_provider.dart` | ✅ same | ✅ same |
-| `application/usecase_providers.dart` | ❌ | ✅ **NEW** |
-| `application/future_providers.dart` | calls **repository** | calls **use case** |
-| `presentation/future_provider_page.dart` | ✅ identical | ✅ identical |
-
-The UI doesn't change. That's a good sign — the use case is an internal detail.
-
----
-
-## Call Chain at Runtime
+## The Call Chain
 
 ```
-UI
- └─ weatherFutureProvider        (application)
-     └─ GetWeatherUseCase        (domain)
-         └─ WeatherRepository    (domain interface)
-             └─ WeatherRepositoryImpl   (data)
-                 └─ HTTP / database / whatever
+UI (FutureProviderPage)
+ └─ weatherFutureProvider             (application)
+     └─ GetWeatherUseCase             (domain — business rules)
+         └─ WeatherRepository         (domain — abstract)
+             └─ WeatherRepositoryImpl (data — JSON → Entity)
+                 └─ WeatherApiService         (data — abstract)
+                     └─ WeatherApiServiceMock (data — fake JSON)
+                        ✨ swap for WeatherApiServiceImpl (real Dio) in prod
 ```
 
 Each hop has ONE job. No layer has two responsibilities.
+
+---
+
+## Who depends on whom
+
+| Layer | Knows about | Does NOT know about |
+|---|---|---|
+| **presentation** | providers | anything else |
+| **application** | domain + data impls | Flutter widgets |
+| **domain** | itself only | Riverpod, Dio, Flutter, JSON |
+| **data** | domain | Riverpod, Flutter |
+
+The domain layer is pure Dart — it could be copied into a server or a CLI app without changes.
+
+---
+
+## The Mock API Service
+
+The demo runs with **no backend**. That's possible because the data layer is split:
+
+| File | Job |
+|---|---|
+| `data_sources/remote/weather_api_service.dart` | Abstract — defines the HTTP surface. Returns raw JSON. |
+| `data_sources/remote/weather_api_service_mock.dart` | Concrete — hardcoded JSON + `Future.delayed` for realism. |
+| `repositories/weather_repository_impl.dart` | Takes the JSON, parses via `WeatherModel.fromJson`, returns `WeatherEntity`. |
+
+Nothing above the data layer knows the mock exists. To go live:
+
+```dart
+// application/providers/weather_api_service_provider.dart
+final weatherApiServiceProvider = Provider<WeatherApiService>((ref) {
+  // Demo:
+  return WeatherApiServiceMock();
+
+  // Production (real HTTP):
+  // final dio = Dio(BaseOptions(baseUrl: 'https://api.weatherapp.com/v1'));
+  // return WeatherApiServiceImpl(dio);
+});
+```
+
+One line. Everything above — repository, use case, providers, UI — keeps working unchanged.
 
 ---
 
@@ -79,20 +106,20 @@ See [USE_CASE.md](./USE_CASE.md) for the full explanation with examples.
 
 Short version:
 
-- **Repository** = "how to fetch data" (API, DB)
-- **Use Case** = "what the app actually does" (business rules)
-- **Provider** = "how Riverpod wires it up" (state management)
+- **Repository** = "how to fetch data" (HTTP, DB)
+- **Use Case**   = "what the app actually does" (business rules)
+- **Provider**   = "how Riverpod wires it up" (state management)
 
-Without the use case, business logic sneaks into the provider or the widget. With the use case, it has a dedicated home.
+Right now `GetWeatherUseCase` just delegates to the repository. That looks pointless — **it isn't**. It's the dedicated home for business rules that WILL show up: validation, unit conversion, caching, analytics. When those arrive, they land in the use case and nothing else moves.
 
 ---
 
 ## How to Run
 
-Update `main.dart`:
+In `main.dart`:
 
 ```dart
-import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/presentation/future_provider_page.dart';
-```
+import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/presentation/pages/future_provider_page.dart';
 
-The `FutureProviderPage` class name is the same — only the import path changes.
+// ... then show `const FutureProviderPage()` somewhere.
+```

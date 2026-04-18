@@ -1,6 +1,6 @@
 // Domain Layer — Entity
-// Pure Dart class with no dependencies on Flutter, Riverpod, or any package.
-// Represents the core business object.
+// Pure Dart. No Flutter, no Riverpod, no packages.
+// The core business object — what the rest of the app talks about.
 
 class WeatherEntity {
   final String city;
@@ -12,7 +12,4 @@ class WeatherEntity {
     required this.temperature,
     required this.condition,
   });
-
-  @override
-  String toString() => '$city: $temperature°C, $condition';
 }
