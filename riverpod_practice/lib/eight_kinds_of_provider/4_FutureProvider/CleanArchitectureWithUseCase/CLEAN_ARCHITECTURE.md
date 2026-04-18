@@ -11,19 +11,28 @@ Same scenario (weather fetching). Same outcome. Same UI. The only difference is 
 ```
 CleanArchitectureWithUseCase/
 ├── domain/                                     (pure Dart, no dependencies)
-│   ├── weather_entity.dart                     — core business object
+│   ├── weather_entity.dart                     — core business objects
+│   ├── forecast_entity.dart
+│   ├── favorite_city_entity.dart
 │   ├── weather_repository.dart                 — abstract interface
-│   └── usecases/
-│       └── get_weather_usecase.dart            — ONE specific action
+│   └── usecases/                               — ONE action per file
+│       ├── get_weather_usecase.dart
+│       ├── get_forecast_usecase.dart
+│       ├── get_favorite_cities_usecase.dart
+│       ├── add_favorite_city_usecase.dart
+│       ├── update_favorite_city_usecase.dart
+│       └── remove_favorite_city_usecase.dart
 │
 ├── data/                                       (implements domain contracts)
 │   ├── weather_model.dart                      — JSON serialization
+│   ├── forecast_model.dart
+│   ├── favorite_city_model.dart
 │   └── weather_repository_impl.dart            — concrete API implementation
 │
 ├── application/                                (providers, DI)
 │   ├── weather_repository_provider.dart        — DI for the repository
-│   ├── get_weather_usecase_provider.dart       — DI for the use case
-│   └── weather_provider.dart                   — FutureProvider (calls use case)
+│   ├── usecase_providers.dart                  — DI for every use case
+│   └── future_providers.dart                   — FutureProviders the UI watches
 │
 └── presentation/                               (UI only)
     └── future_provider_page.dart               — page widget
@@ -37,12 +46,12 @@ CleanArchitectureWithUseCase/
 |---|---|---|
 | `domain/weather_entity.dart` | ✅ same | ✅ same |
 | `domain/weather_repository.dart` | ✅ same | ✅ same |
-| `domain/usecases/get_weather_usecase.dart` | ❌ | ✅ **NEW** |
+| `domain/usecases/*.dart` | ❌ | ✅ **NEW** |
 | `data/weather_model.dart` | ✅ same | ✅ same |
 | `data/weather_repository_impl.dart` | ✅ same | ✅ same |
 | `application/weather_repository_provider.dart` | ✅ same | ✅ same |
-| `application/get_weather_usecase_provider.dart` | ❌ | ✅ **NEW** |
-| `application/weather_provider.dart` | calls **repository** | calls **use case** |
+| `application/usecase_providers.dart` | ❌ | ✅ **NEW** |
+| `application/future_providers.dart` | calls **repository** | calls **use case** |
 | `presentation/future_provider_page.dart` | ✅ identical | ✅ identical |
 
 The UI doesn't change. That's a good sign — the use case is an internal detail.

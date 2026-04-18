@@ -5,7 +5,6 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/usecases/get_forecast_usecase.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/usecases/get_weather_usecase.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/usecases/remove_favorite_city_usecase.dart';
-import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/usecases/search_cities_usecase.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/usecases/update_favorite_city_usecase.dart';
 
 // Application Layer — Use Case Providers
@@ -19,10 +18,6 @@ final getWeatherUseCaseProvider = Provider<GetWeatherUseCase>((ref) {
 
 final getForecastUseCaseProvider = Provider<GetForecastUseCase>((ref) {
   return GetForecastUseCase(ref.watch(weatherRepositoryProvider));
-});
-
-final searchCitiesUseCaseProvider = Provider<SearchCitiesUseCase>((ref) {
-  return SearchCitiesUseCase(ref.watch(weatherRepositoryProvider));
 });
 
 final getFavoriteCitiesUseCaseProvider =

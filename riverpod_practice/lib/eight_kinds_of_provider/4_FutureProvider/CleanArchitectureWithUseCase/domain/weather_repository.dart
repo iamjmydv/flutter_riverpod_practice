@@ -1,4 +1,3 @@
-import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/city_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/favorite_city_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/forecast_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/weather_entity.dart';
@@ -8,13 +7,12 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 // The data layer provides the concrete implementation.
 //
 // This interface mirrors a typical REST API surface:
-//   GET    /v1/weather?city=X        → getWeather
+//   GET    /v1/weather?city=X         → getWeather
 //   GET    /v1/forecast?city=X&days=N → getForecast
-//   GET    /v1/cities/search?q=X     → searchCities
-//   GET    /v1/favorites             → getFavoriteCities
-//   POST   /v1/favorites             → addFavoriteCity
-//   PUT    /v1/favorites/{id}        → updateFavoriteCity
-//   DELETE /v1/favorites/{id}        → removeFavoriteCity
+//   GET    /v1/favorites              → getFavoriteCities
+//   POST   /v1/favorites              → addFavoriteCity
+//   PUT    /v1/favorites/{id}         → updateFavoriteCity
+//   DELETE /v1/favorites/{id}         → removeFavoriteCity
 
 abstract class WeatherRepository {
   // GET — current weather for a city
@@ -25,9 +23,6 @@ abstract class WeatherRepository {
     required String city,
     int days = 7,
   });
-
-  // GET — city autocomplete / search
-  Future<List<CityEntity>> searchCities({required String query});
 
   // GET — list all favorites for the current user
   Future<List<FavoriteCityEntity>> getFavoriteCities();

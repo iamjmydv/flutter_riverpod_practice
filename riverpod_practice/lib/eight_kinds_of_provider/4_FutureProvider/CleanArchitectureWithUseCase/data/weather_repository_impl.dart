@@ -1,8 +1,6 @@
-import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/data/city_model.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/data/favorite_city_model.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/data/forecast_model.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/data/weather_model.dart';
-import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/city_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/favorite_city_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/forecast_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/weather_entity.dart';
@@ -30,7 +28,7 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 // ═════════════════════════════════════════════════════════════════════════════
 
 class WeatherRepositoryImpl implements WeatherRepository {
-  // ── In-memory mock store for favorites (simulates a remote DB) ─────────────
+  // In-memory mock store for favorites (simulates a remote DB).
   final List<Map<String, dynamic>> _favoritesStore = [
     {
       'id': 'fav_01HXYZ123ABC',
@@ -60,50 +58,29 @@ class WeatherRepositoryImpl implements WeatherRepository {
   //      "status": "ok",
   //      "data": {
   //        "city": "London",
-  //        "country": "GB",
   //        "temperature": 22.5,
-  //        "feels_like": 21.8,
-  //        "humidity": 60,
-  //        "condition": "Sunny",
-  //        "wind_kph": 12.4,
-  //        "updated_at": "2026-04-18T14:30:00Z"
+  //        "condition": "Sunny"
   //      }
-  //    }
-  //
-  //  ── RESPONSE 404 NOT FOUND ──
-  //    {
-  //      "status": "error",
-  //      "error": { "code": "CITY_NOT_FOUND", "message": "No weather data." }
   //    }
   // ═══════════════════════════════════════════════════════════════════════════
   @override
   Future<WeatherEntity> getWeather({required String city}) async {
     await Future.delayed(const Duration(seconds: 1));
 
-    // Real code would be:
+    // Real code:
     //   final res = await _dio.get('/weather', queryParameters: {'city': city});
     //   return WeatherModel.fromJson(res.data['data']);
 
     final fakeJson = {
       'city': city,
-      'country': 'GB',
       'temperature': 22.5,
-      'feels_like': 21.8,
-      'humidity': 60,
       'condition': 'Sunny',
-      'wind_kph': 12.4,
-      'updated_at': '2026-04-18T14:30:00Z',
     };
     return WeatherModel.fromJson(fakeJson);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
   //  GET /v1/forecast?city={city}&days={days}
-  //
-  //  ── REQUEST ──
-  //    GET /v1/forecast?city=London&days=3 HTTP/1.1
-  //    Host: api.weatherapp.com
-  //    Authorization: Bearer ...
   //
   //  ── RESPONSE 200 OK ──
   //    {
@@ -112,8 +89,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
   //        "city": "London",
   //        "days": [
   //          { "date": "2026-04-18", "min_temp": 12.0, "max_temp": 22.5, "condition": "Sunny" },
-  //          { "date": "2026-04-19", "min_temp": 13.2, "max_temp": 20.1, "condition": "Cloudy" },
-  //          { "date": "2026-04-20", "min_temp": 10.8, "max_temp": 18.4, "condition": "Rainy" }
+  //          ...
   //        ]
   //      }
   //    }
@@ -150,55 +126,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  GET /v1/cities/search?q={query}
-  //
-  //  ── REQUEST ──
-  //    GET /v1/cities/search?q=lon HTTP/1.1
-  //    Host: api.weatherapp.com
-  //    Authorization: Bearer ...
-  //
-  //  ── RESPONSE 200 OK ──
-  //    {
-  //      "status": "ok",
-  //      "data": [
-  //        { "name": "London",  "country": "GB", "latitude": 51.5073, "longitude": -0.1276 },
-  //        { "name": "Long Beach", "country": "US", "latitude": 33.7701, "longitude": -118.1937 }
-  //      ]
-  //    }
-  // ═══════════════════════════════════════════════════════════════════════════
-  @override
-  Future<List<CityEntity>> searchCities({required String query}) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Real code:
-    //   final res = await _dio.get('/cities/search', queryParameters: {'q': query});
-    //   final list = res.data['data'] as List;
-    //   return list.map((j) => CityModel.fromJson(j)).toList();
-
-    const allCities = [
-      {'name': 'London', 'country': 'GB', 'latitude': 51.5073, 'longitude': -0.1276},
-      {'name': 'Long Beach', 'country': 'US', 'latitude': 33.7701, 'longitude': -118.1937},
-      {'name': 'Paris', 'country': 'FR', 'latitude': 48.8566, 'longitude': 2.3522},
-      {'name': 'Tokyo', 'country': 'JP', 'latitude': 35.6762, 'longitude': 139.6503},
-      {'name': 'New York', 'country': 'US', 'latitude': 40.7128, 'longitude': -74.0060},
-    ];
-
-    final q = query.toLowerCase();
-    final matches = allCities
-        .where((c) => (c['name'] as String).toLowerCase().contains(q))
-        .map((c) => CityModel.fromJson(c))
-        .toList();
-
-    return matches;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
   //  GET /v1/favorites
-  //
-  //  ── REQUEST ──
-  //    GET /v1/favorites HTTP/1.1
-  //    Host: api.weatherapp.com
-  //    Authorization: Bearer ...
   //
   //  ── RESPONSE 200 OK ──
   //    {
@@ -224,30 +152,12 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  POST /v1/favorites
-  //
-  //  ── REQUEST ──
-  //    POST /v1/favorites HTTP/1.1
-  //    Host: api.weatherapp.com
-  //    Content-Type: application/json
-  //    Authorization: Bearer ...
-  //
-  //    { "city": "Tokyo" }
+  //  POST /v1/favorites        body: { "city": "Tokyo" }
   //
   //  ── RESPONSE 201 CREATED ──
   //    {
   //      "status": "ok",
-  //      "data": {
-  //        "id": "fav_03HXYZ789GHI",
-  //        "city": "Tokyo",
-  //        "created_at": "2026-04-18T15:00:00Z"
-  //      }
-  //    }
-  //
-  //  ── RESPONSE 409 CONFLICT ──
-  //    {
-  //      "status": "error",
-  //      "error": { "code": "ALREADY_EXISTS", "message": "City is already a favorite." }
+  //      "data": { "id": "fav_03...", "city": "Tokyo", "created_at": "..." }
   //    }
   // ═══════════════════════════════════════════════════════════════════════════
   @override
@@ -255,11 +165,9 @@ class WeatherRepositoryImpl implements WeatherRepository {
     await Future.delayed(const Duration(milliseconds: 600));
 
     // Real code:
-    //   final model = FavoriteCityModel(id: '', city: city, createdAt: DateTime.now());
-    //   final res = await _dio.post('/favorites', data: model.toJson());
+    //   final res = await _dio.post('/favorites', data: {'city': city});
     //   return FavoriteCityModel.fromJson(res.data['data']);
 
-    // Simulate 409 conflict
     final duplicate = _favoritesStore
         .any((f) => (f['city'] as String).toLowerCase() == city.toLowerCase());
     if (duplicate) {
@@ -276,30 +184,12 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  PUT /v1/favorites/{id}
-  //
-  //  ── REQUEST ──
-  //    PUT /v1/favorites/fav_01HXYZ123ABC HTTP/1.1
-  //    Host: api.weatherapp.com
-  //    Content-Type: application/json
-  //    Authorization: Bearer ...
-  //
-  //    { "city": "Manchester" }
+  //  PUT /v1/favorites/{id}    body: { "city": "Manchester" }
   //
   //  ── RESPONSE 200 OK ──
   //    {
   //      "status": "ok",
-  //      "data": {
-  //        "id": "fav_01HXYZ123ABC",
-  //        "city": "Manchester",
-  //        "created_at": "2026-04-10T10:00:00Z"
-  //      }
-  //    }
-  //
-  //  ── RESPONSE 404 NOT FOUND ──
-  //    {
-  //      "status": "error",
-  //      "error": { "code": "NOT_FOUND", "message": "Favorite does not exist." }
+  //      "data": { "id": "fav_01...", "city": "Manchester", "created_at": "..." }
   //    }
   // ═══════════════════════════════════════════════════════════════════════════
   @override
@@ -327,19 +217,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
   // ═══════════════════════════════════════════════════════════════════════════
   //  DELETE /v1/favorites/{id}
   //
-  //  ── REQUEST ──
-  //    DELETE /v1/favorites/fav_01HXYZ123ABC HTTP/1.1
-  //    Host: api.weatherapp.com
-  //    Authorization: Bearer ...
-  //
   //  ── RESPONSE 204 NO CONTENT ──
-  //    (empty body)
-  //
-  //  ── RESPONSE 404 NOT FOUND ──
-  //    {
-  //      "status": "error",
-  //      "error": { "code": "NOT_FOUND", "message": "Favorite does not exist." }
-  //    }
   // ═══════════════════════════════════════════════════════════════════════════
   @override
   Future<void> removeFavoriteCity({required String id}) async {
@@ -348,8 +226,8 @@ class WeatherRepositoryImpl implements WeatherRepository {
     // Real code:
     //   await _dio.delete('/favorites/$id');
 
-    final removed = _favoritesStore.any((f) => f['id'] == id);
-    if (!removed) {
+    final exists = _favoritesStore.any((f) => f['id'] == id);
+    if (!exists) {
       throw StateError('NOT_FOUND: Favorite $id does not exist.');
     }
     _favoritesStore.removeWhere((f) => f['id'] == id);
