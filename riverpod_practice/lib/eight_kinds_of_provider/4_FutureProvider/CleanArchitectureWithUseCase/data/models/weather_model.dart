@@ -18,3 +18,31 @@ class WeatherModel extends WeatherEntity {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// REAL-WORLD API SAMPLE — Parsing OpenWeatherMap response
+// ─────────────────────────────────────────────────────────────
+// Real APIs rarely hand you flat keys. The Model is where you
+// translate nested JSON into clean entity fields.
+//
+// factory WeatherModel.fromJson(Map<String, dynamic> json) {
+//   final weatherList = json['weather'] as List<dynamic>;
+//   final firstWeather = weatherList.first as Map<String, dynamic>;
+//   final main = json['main'] as Map<String, dynamic>;
+//
+//   return WeatherModel(
+//     city: json['name'] as String,
+//     temperature: (main['temp'] as num).toDouble(),
+//     condition: firstWeather['main'] as String,
+//   );
+// }
+//
+// For toJson() (e.g., caching to local storage):
+//
+// Map<String, dynamic> toJson() => {
+//   'city': city,
+//   'temperature': temperature,
+//   'condition': condition,
+// };
+// ─────────────────────────────────────────────────────────────
+

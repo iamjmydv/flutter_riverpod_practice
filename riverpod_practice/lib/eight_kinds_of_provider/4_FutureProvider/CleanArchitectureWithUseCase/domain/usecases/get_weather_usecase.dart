@@ -14,3 +14,31 @@ class GetWeatherUseCase {
     return _repository.getWeather(city: city);
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// REAL-WORLD API SAMPLE — Use Case with validation & business rules
+// ─────────────────────────────────────────────────────────────
+// Real use cases often hold business rules the UI shouldn't know:
+// input validation, unit conversion, composing multiple repos, etc.
+//
+// class GetWeatherUseCase {
+//   final WeatherRepository _repository;
+//   final FavoritesRepository _favorites;
+//
+//   GetWeatherUseCase(this._repository, this._favorites);
+//
+//   Future<WeatherEntity> call({required String city}) async {
+//     final normalized = city.trim();
+//     if (normalized.isEmpty) {
+//       throw const InvalidCityException('City cannot be empty');
+//     }
+//     if (normalized.length < 2) {
+//       throw const InvalidCityException('City name too short');
+//     }
+//     final weather = await _repository.getWeather(city: normalized);
+//     await _favorites.recordRecent(normalized); // side-effect
+//     return weather;
+//   }
+// }
+// ─────────────────────────────────────────────────────────────
+

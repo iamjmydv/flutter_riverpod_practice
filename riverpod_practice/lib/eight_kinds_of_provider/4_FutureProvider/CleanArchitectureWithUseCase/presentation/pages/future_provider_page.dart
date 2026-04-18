@@ -75,6 +75,25 @@ class _FutureProviderPageState extends ConsumerState<FutureProviderPage> {
           ),
           Expanded(
             child: Center(
+              // ────────────────────────────────────────────────
+              // REAL-WORLD API SAMPLE — error branching & retry
+              // ────────────────────────────────────────────────
+              // In production, branch on error type so the UI can
+              // react accordingly (offline banner, "city not found"
+              // hint, retry button, etc.):
+              //
+              // error: (err, _) {
+              //   if (err is NoInternetFailure) {
+              //     return _OfflineView(onRetry: () =>
+              //         ref.invalidate(weatherFutureProvider));
+              //   }
+              //   if (err is InvalidCityException) {
+              //     return Text(err.message);
+              //   }
+              //   return _GenericErrorView(error: err, onRetry: () =>
+              //       ref.invalidate(weatherFutureProvider));
+              // },
+              // ────────────────────────────────────────────────
               child: weatherAsync.when(
                 loading: () => const CircularProgressIndicator(),
                 error: (err, _) => Text(

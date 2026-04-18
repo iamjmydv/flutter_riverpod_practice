@@ -20,3 +20,46 @@ class WeatherApiServiceImpl implements WeatherApiService {
     return conditions[city.hashCode.abs() % conditions.length];
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// REAL-WORLD API SAMPLE — OpenWeatherMap with Dio
+// ─────────────────────────────────────────────────────────────
+// Add to pubspec.yaml:  dio: ^5.4.0
+//
+// import 'package:dio/dio.dart';
+//
+// class WeatherApiServiceImpl implements WeatherApiService {
+//   final Dio _dio;
+//   final String _apiKey;
+//
+//   WeatherApiServiceImpl(this._dio, this._apiKey);
+//
+//   @override
+//   Future<Map<String, dynamic>> getWeather({required String city}) async {
+//     try {
+//       final response = await _dio.get(
+//         'https://api.openweathermap.org/data/2.5/weather',
+//         queryParameters: {
+//           'q': city,
+//           'appid': _apiKey,
+//           'units': 'metric',
+//         },
+//       );
+//       return response.data as Map<String, dynamic>;
+//     } on DioException catch (e) {
+//       if (e.response?.statusCode == 404) {
+//         throw Exception('City not found: $city');
+//       }
+//       throw Exception('Network error: ${e.message}');
+//     }
+//   }
+// }
+//
+// Example JSON response from OpenWeatherMap:
+// {
+//   "name": "London",
+//   "main": { "temp": 15.3, "humidity": 72 },
+//   "weather": [ { "main": "Clouds", "description": "overcast clouds" } ]
+// }
+// ─────────────────────────────────────────────────────────────
+
