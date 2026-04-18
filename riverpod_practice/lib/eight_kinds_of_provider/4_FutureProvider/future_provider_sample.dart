@@ -13,11 +13,10 @@ final weatherRepositoryProvider = Provider<WeatherRepository>((ref) {
 // FutureProvider — watches the repository and calls the async method.
 // autoDispose: automatically cleans up when no longer listened to.
 // The return type is automatically wrapped in AsyncValue<Weather>.
-final weatherFutureProvider = FutureProvider.autoDispose<Weather>((ref) {
+final weatherFutureProvider = FutureProvider.autoDispose<WeatherModel>((ref) {
   final weatherRepository = ref.watch(weatherRepositoryProvider);
   return weatherRepository.getWeather(city: 'London');
 });
-
 
 // FutureProvider overview:
 //

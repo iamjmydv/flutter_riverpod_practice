@@ -1,11 +1,11 @@
 // A simple Weather class to simulate an API response
 
-class Weather {
+class WeatherModel {
   final String city;
   final double temperature;
   final String condition;
 
-  Weather({
+  WeatherModel({
     required this.city,
     required this.temperature,
     required this.condition,
