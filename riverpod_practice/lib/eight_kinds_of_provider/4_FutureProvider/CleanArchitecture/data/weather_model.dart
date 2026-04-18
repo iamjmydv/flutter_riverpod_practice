@@ -15,7 +15,8 @@ class WeatherModel extends WeatherEntity {
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
     return WeatherModel(
       city: json['city'] as String,
-      temperature: (json['temperature'] as num).toDouble(),
+      temperature: (json['temperature'] as num)
+          .toDouble(), // ← only this line changes
       condition: json['condition'] as String,
     );
   }
