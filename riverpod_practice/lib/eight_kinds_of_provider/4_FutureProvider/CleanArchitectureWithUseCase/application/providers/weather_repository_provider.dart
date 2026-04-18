@@ -3,9 +3,7 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/data/repositories/weather_repository_impl.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/repositories/weather_repository.dart';
 
-// Application Layer — Repository Provider
-// Typed as the ABSTRACT interface, built with the CONCRETE impl,
-// wired with whichever API service is registered above.
+// Application Layer — Repository DI. Typed as the abstract interface.
 
 final weatherRepositoryProvider = Provider<WeatherRepository>((ref) {
   return WeatherRepositoryImpl(ref.watch(weatherApiServiceProvider));

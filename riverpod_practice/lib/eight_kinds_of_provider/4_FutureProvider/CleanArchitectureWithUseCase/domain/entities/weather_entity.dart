@@ -1,6 +1,4 @@
-// Domain Layer — Entity
-// Pure Dart. No Flutter, no Riverpod, no packages.
-// The core business object — what the rest of the app talks about.
+// Domain Layer — Pure Dart entity. No Flutter, Riverpod, or packages.
 
 class WeatherEntity {
   final String city;

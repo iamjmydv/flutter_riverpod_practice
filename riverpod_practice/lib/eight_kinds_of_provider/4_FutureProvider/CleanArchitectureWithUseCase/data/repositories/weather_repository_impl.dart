@@ -3,12 +3,7 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/entities/weather_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/repositories/weather_repository.dart';
 
-// Data Layer — Repository Implementation
-// Takes raw JSON from the API service, parses it via the Model,
-// returns a domain Entity. That's the whole job.
-//
-// It depends on the ABSTRACT `WeatherApiService`, so the same code works
-// whether the service is a mock, a real Dio client, or a test fake.
+// Data Layer — Takes JSON from the API service and returns a domain Entity.
 
 class WeatherRepositoryImpl implements WeatherRepository {
   final WeatherApiService _api;
