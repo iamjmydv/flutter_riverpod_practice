@@ -1,43 +1,56 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/application/get_weather_usecase_provider.dart';
+import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/favorite_city_entity.dart';
+import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/forecast_entity.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/domain/weather_entity.dart';
 
-// Application Layer — FutureProvider
-// Notice this provider watches the USE CASE, NOT the repository directly.
+// Application Layer — FutureProviders
 //
-// Flow:
-//   Provider → UseCase → Repository → API
+// READ-only screens use FutureProviders. They watch a use case and
+// call it — the result is wrapped in AsyncValue<T> automatically.
 //
-// Why add the use case in the middle?
-//   - Keeps business logic OUT of the provider
-//   - The provider's only job is Riverpod wiring
-//   - If you need to validate, transform, or combine data → do it in the use case
+// WRITE actions (add/update/delete) are invoked imperatively from UI
+// callbacks via `ref.read(xUseCaseProvider)(...)` — no FutureProvider
+// needed because they aren't "state to watch", they are "actions to run".
 
-// Re-export so the presentation layer only needs one import
+// Re-exports so the UI imports only this one file
 export 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/application/get_weather_usecase_provider.dart';
 export 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/application/weather_repository_provider.dart';
 
-// FutureProvider — invokes the use case (not the repository).
-// autoDispose: automatically cleans up when no longer listened to.
-// The return type is automatically wrapped in AsyncValue<WeatherEntity>.
-final weatherFutureProvider = FutureProvider.autoDispose<WeatherEntity>((ref) {
-  final getWeather = ref.watch(getWeatherUseCaseProvider);
+// ── READ providers ──────────────────────────────────────────────────────────
 
-  // call() makes the use case invokable like a function.
-  // Equivalent to: return getWeather.call(city: 'London');
+// Current weather for a fixed city (simplest case).
+final weatherFutureProvider =
+    FutureProvider.autoDispose<WeatherEntity>((ref) {
+  final getWeather = ref.watch(getWeatherUseCaseProvider);
   return getWeather(city: 'London');
 });
 
+// Forecast for a fixed city.
+final forecastFutureProvider =
+    FutureProvider.autoDispose<ForecastEntity>((ref) {
+  final getForecast = ref.watch(getForecastUseCaseProvider);
+  return getForecast(city: 'London', days: 3);
+});
 
-// Layer overview (with use case):
+// User's favorite list.
+final favoriteCitiesFutureProvider =
+    FutureProvider.autoDispose<List<FavoriteCityEntity>>((ref) {
+  final getFavorites = ref.watch(getFavoriteCitiesUseCaseProvider);
+  return getFavorites();
+});
+
+// Layer overview:
 //
-// presentation → application → domain ← data
-//                                 ↑
-//                            use case lives here
+//   presentation
+//       ↓ ref.watch / ref.read
+//   application  (providers: repository, use cases, future providers)
+//       ↓
+//   domain       (entities, abstract repository, use cases)
+//       ↑ implements
+//   data         (models, concrete repository)
+//       ↓ HTTP
+//   API / Backend
 //
-// The use case is a domain-layer object. The application layer just
-// creates it (via provider) and calls it.
-//
-// Clean Architecture benefit:
-//   To swap from fake API to real API, change WeatherRepositoryImpl in
-//   weather_repository_provider.dart — the use case and provider don't move.
+// To swap fake → real API: change WeatherRepositoryImpl in
+// weather_repository_provider.dart. Every other file stays the same.

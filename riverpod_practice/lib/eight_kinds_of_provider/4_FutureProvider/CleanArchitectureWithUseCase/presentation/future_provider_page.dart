@@ -3,116 +3,290 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/CleanArchitectureWithUseCase/application/weather_provider.dart';
 
 // Presentation Layer — Page (UI)
-// Only knows about the application layer (providers).
-// Has NO direct dependency on data, domain, or the use case class itself.
+// Only knows about the application layer (providers + use case providers).
+// Has NO direct dependency on data or domain repository/model classes.
 //
-// The UI looks IDENTICAL to the no-use-case version — that's the point.
-// Adding a use case doesn't change how the UI consumes the provider.
+// This page demonstrates all HTTP verbs through the use cases:
+//   GET    → current weather, forecast, favorites list
+//   POST   → add a favorite
+//   PUT    → edit a favorite
+//   DELETE → remove a favorite
 
 class FutureProviderPage extends ConsumerWidget {
   const FutureProviderPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ref.watch(weatherFutureProvider) returns AsyncValue<WeatherEntity>
-    // Under the hood: Provider → UseCase → Repository → API
+    // Three independent AsyncValue streams, one per FutureProvider.
     final weatherAsync = ref.watch(weatherFutureProvider);
+    final forecastAsync = ref.watch(forecastFutureProvider);
+    final favoritesAsync = ref.watch(favoriteCitiesFutureProvider);
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Re-fetch by invalidating the FutureProvider
-          ref.invalidate(weatherFutureProvider);
-        },
-        child: const Icon(Icons.refresh),
+      appBar: AppBar(
+        title: const Text('Weather API Demo'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              // Re-fetch all three read endpoints.
+              ref.invalidate(weatherFutureProvider);
+              ref.invalidate(forecastFutureProvider);
+              ref.invalidate(favoriteCitiesFutureProvider);
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              '* FutureProvider *',
-              style: TextStyle(fontSize: 24),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Weather (Clean Architecture + UseCase)',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () => _showAddFavoriteDialog(context, ref),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _sectionTitle('Current Weather (GET)'),
+          _weatherCard(weatherAsync),
+          const SizedBox(height: 24),
 
-            // Use .when() to handle all three async states:
-            //   loading → show a spinner
-            //   error   → show the error message
-            //   data    → show the actual weather data
-            weatherAsync.when(
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text(
-                'Error: $err',
-                style: const TextStyle(color: Colors.red, fontSize: 18),
-              ),
-              data: (weather) => Column(
+          _sectionTitle('3-Day Forecast (GET)'),
+          _forecastCard(forecastAsync),
+          const SizedBox(height: 24),
+
+          _sectionTitle('Favorite Cities (GET / POST / PUT / DELETE)'),
+          _favoritesCard(context, ref, favoritesAsync),
+        ],
+      ),
+    );
+  }
+
+  // ── Section widgets ────────────────────────────────────────────────────────
+
+  Widget _sectionTitle(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
+
+  Widget _weatherCard(AsyncValue weatherAsync) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: weatherAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Text('Error: $err',
+              style: const TextStyle(color: Colors.red)),
+          data: (weather) => Row(
+            children: [
+              const Icon(Icons.wb_sunny, size: 48, color: Colors.orange),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.wb_sunny, size: 64, color: Colors.orange),
-                  const SizedBox(height: 16),
-                  Text(
-                    weather.city,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${weather.temperature}°C',
-                    style: const TextStyle(fontSize: 48),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    weather.condition,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  Text(weather.city,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('${weather.temperature}°C — ${weather.condition}'),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 32),
-            const Text(
-              'Tap refresh to re-fetch',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-// CLEAN ARCHITECTURE WITH USE CASE SUMMARY:
-//
-// domain/
-//   ├── weather_entity.dart         — core business object
-//   ├── weather_repository.dart     — abstract interface (data contract)
-//   └── usecases/
-//       └── get_weather_usecase.dart — ONE specific action the app performs
-//
-// data/
-//   ├── weather_model.dart            — JSON (de)serialization
-//   └── weather_repository_impl.dart  — concrete API calls
-//
-// application/
-//   ├── weather_repository_provider.dart   — DI for the repository
-//   ├── get_weather_usecase_provider.dart  — DI for the use case
-//   └── weather_provider.dart              — FutureProvider (calls the use case)
-//
-// presentation/
-//   └── future_provider_page.dart   — UI only
-//
-// Call chain at runtime:
-//   UI → weatherFutureProvider → GetWeatherUseCase → WeatherRepository → API
-//
-// To test: update main.dart to import this page as the home widget.
+  Widget _forecastCard(AsyncValue forecastAsync) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: forecastAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Text('Error: $err',
+              style: const TextStyle(color: Colors.red)),
+          data: (forecast) => Column(
+            children: forecast.days.map<Widget>((d) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        d.date.toIso8601String().split('T').first,
+                      ),
+                    ),
+                    Text('${d.minTemp}° / ${d.maxTemp}°'),
+                    const SizedBox(width: 12),
+                    Text(d.condition,
+                        style: const TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _favoritesCard(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue favoritesAsync,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: favoritesAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (err, _) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text('Error: $err',
+                style: const TextStyle(color: Colors.red)),
+          ),
+          data: (favorites) {
+            if (favorites.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('No favorites yet. Tap + to add one.'),
+              );
+            }
+            return Column(
+              children: favorites.map<Widget>((fav) {
+                return ListTile(
+                  leading: const Icon(Icons.favorite, color: Colors.red),
+                  title: Text(fav.city),
+                  subtitle: Text('id: ${fav.id}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _showEditFavoriteDialog(
+                            context, ref, fav.id, fav.city),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _removeFavorite(context, ref, fav.id),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ── Write actions (POST / PUT / DELETE) ───────────────────────────────────
+  //
+  // These are imperative — they run on a button tap, they don't live
+  // inside a FutureProvider. The pattern:
+  //   1. ref.read(useCaseProvider) → the use case instance
+  //   2. await it with the form input
+  //   3. ref.invalidate(listProvider) → re-fetch to reflect the change
+
+  Future<void> _showAddFavoriteDialog(
+      BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Add Favorite City'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'e.g. Tokyo'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    try {
+      // POST /v1/favorites
+      final addFavorite = ref.read(addFavoriteCityUseCaseProvider);
+      await addFavorite(city: result);
+      ref.invalidate(favoriteCitiesFutureProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _showEditFavoriteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String id,
+    String currentCity,
+  ) async {
+    final controller = TextEditingController(text: currentCity);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Edit Favorite'),
+        content: TextField(controller: controller, autofocus: true),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    try {
+      // PUT /v1/favorites/{id}
+      final updateFavorite = ref.read(updateFavoriteCityUseCaseProvider);
+      await updateFavorite(id: id, city: result);
+      ref.invalidate(favoriteCitiesFutureProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeFavorite(
+      BuildContext context, WidgetRef ref, String id) async {
+    try {
+      // DELETE /v1/favorites/{id}
+      final removeFavorite = ref.read(removeFavoriteCityUseCaseProvider);
+      await removeFavorite(id: id);
+      ref.invalidate(favoriteCitiesFutureProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed: $e')),
+        );
+      }
+    }
+  }
+}
