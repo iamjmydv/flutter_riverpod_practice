@@ -5,5 +5,5 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 // The data layer provides the concrete implementation.
 
 abstract class WeatherRepository {
-  Future<Weather> getWeather({required String city});
+  Future<WeatherEntity> getWeather({required String city});
 }

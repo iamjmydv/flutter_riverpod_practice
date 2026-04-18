@@ -8,7 +8,7 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 
 class WeatherRepositoryImpl implements WeatherRepository {
   @override
-  Future<Weather> getWeather({required String city}) async {
+  Future<WeatherEntity> getWeather({required String city}) async {
     // Simulate a network delay
     await Future.delayed(const Duration(seconds: 2));
 

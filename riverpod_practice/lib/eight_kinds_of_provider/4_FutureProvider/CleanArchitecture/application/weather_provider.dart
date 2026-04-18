@@ -14,11 +14,10 @@ export 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 // FutureProvider — watches the repository and calls the async method.
 // autoDispose: automatically cleans up when no longer listened to.
 // The return type is automatically wrapped in AsyncValue<Weather>.
-final weatherFutureProvider = FutureProvider.autoDispose<Weather>((ref) {
+final weatherFutureProvider = FutureProvider.autoDispose<WeatherEntity>((ref) {
   final weatherRepository = ref.watch(weatherRepositoryProvider);
   return weatherRepository.getWeather(city: 'London');
 });
-
 
 // FutureProvider overview:
 //

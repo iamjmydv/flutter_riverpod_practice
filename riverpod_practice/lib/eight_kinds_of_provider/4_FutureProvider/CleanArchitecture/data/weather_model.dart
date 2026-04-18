@@ -4,7 +4,7 @@ import 'package:riverpod_practice/eight_kinds_of_provider/4_FutureProvider/Clean
 // Extends or maps to the domain entity.
 // In a real app, this handles JSON serialization/deserialization.
 
-class WeatherModel extends Weather {
+class WeatherModel extends WeatherEntity {
   const WeatherModel({
     required super.city,
     required super.temperature,
