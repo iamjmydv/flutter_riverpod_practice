@@ -13,12 +13,12 @@ final stockRepositoryProvider = Provider<StockRepository>((ref) {
 // StreamProvider — watches the repository and returns a Stream.
 // autoDispose: automatically cancels the stream subscription when no longer listened to.
 // The return type is automatically wrapped in AsyncValue<StockPrice>.
-final stockPriceStreamProvider =
-    StreamProvider.autoDispose<StockPrice>((ref) {
+final stockPriceStreamProvider = StreamProvider.autoDispose<StockPriceModel>((
+  ref,
+) {
   final stockRepository = ref.watch(stockRepositoryProvider);
   return stockRepository.watchStockPrice(symbol: 'AAPL');
 });
-
 
 // StreamProvider overview:
 //

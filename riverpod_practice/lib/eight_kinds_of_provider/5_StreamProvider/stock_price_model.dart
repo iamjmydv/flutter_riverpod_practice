@@ -1,11 +1,11 @@
 // A simple StockPrice class to simulate a realtime data stream
 
-class StockPrice {
+class StockPriceModel {
   final String symbol;
   final double price;
   final DateTime timestamp;
 
-  StockPrice({
+  StockPriceModel({
     required this.symbol,
     required this.price,
     required this.timestamp,
