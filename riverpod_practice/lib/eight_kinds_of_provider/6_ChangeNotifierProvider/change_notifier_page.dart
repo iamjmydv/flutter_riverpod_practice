@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/eight_kinds_of_provider/6_ChangeNotifierProvider/cart_item_model.dart';
-import 'package:riverpod_practice/eight_kinds_of_provider/6_ChangeNotifierProvider/change_notifier_provider_sample.dart';
+import 'package:riverpod_practice/eight_kinds_of_provider/6_ChangeNotifierProvider/change_notifier_provider.dart';
 
 // Sample products to add to cart
 final sampleProducts = [
